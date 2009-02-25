@@ -1,13 +1,16 @@
 import re
 
 class Matcher:
+	EXT_THRESHOLD = 5
+	INT_THRESHOLD = 15
+
 	def __init__(self, adapter):
 		self.adapter = adapter
 		self.rc = reverse_complement(self.adapter)
 		self.forward_seeker = re.compile('(?P<preseq>.*?)' + make_search_pattern(self.adapter) + '(?P<postseq>.*)')
 		self.rc_seeker = re.compile ('(?P<preseq>.*?)' + make_search_pattern(self.rc) + '(?P<postseq>.*?)')
 
-	def match_forward(self, sequence, ext_threshold = 5, int_threshold = 15):
+	def match_forward(self, sequence, ext_threshold=EXT_THRESHOLD, int_threshold=INT_THRESHOLD):
 		match_forward = self.forward_seeker.search(sequence)
 		if match_forward and len(match_forward.group('adapterseq')) > int_threshold:
 			return match_forward.group('postseq')
@@ -16,7 +19,7 @@ class Matcher:
 		else:
 			return None
 
-	def match_rc(self, sequence, ext_threshold = 5, int_threshold = 15):
+	def match_rc(self, sequence, ext_threshold=EXT_THRESHOLD, int_threshold=INT_THRESHOLD):
 		match_rc = self.rc_seeker.search(sequence)
 		if match_rc and len(match_rc.group('adapterseq')) > int_threshold:
 			return match_rc.group('preseq')
@@ -25,13 +28,12 @@ class Matcher:
 		else:
 			return None
 
-	def match(self, sequence, ext_threshold = 5, int_threshold = 15):
+	def match(self, sequence, ext_threshold=EXT_THRESHOLD, int_threshold=INT_THRESHOLD):
 		self.match_forward(sequence, ext_threshold, int_threshold)
 		return self.match_forward(sequence, ext_threshold, int_threshold) or self.match_rc(sequence, ext_threshold, int_threshold)
 
 # helper functions
-def make_search_pattern(adapter):
-	threshold = 5
+def make_search_pattern(adapter, threshold = Matcher.EXT_THRESHOLD):
 	windows = []
 	window_size = len(adapter)
 	i = 0
