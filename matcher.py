@@ -10,36 +10,35 @@ class Matcher:
 		self.forward_seeker = re.compile('(?P<preseq>.*?)' + make_search_pattern(self.adapter) + '(?P<postseq>.*)')
 		self.rc_seeker = re.compile ('(?P<preseq>.*?)' + make_search_pattern(self.rc) + '(?P<postseq>.*?)')
 
-	def match_forward(self, sequence, ext_threshold=EXT_THRESHOLD, int_threshold=INT_THRESHOLD):
+	def match_forward(self, sequence):
 		match_forward = self.forward_seeker.search(sequence)
-		if match_forward and len(match_forward.group('adapterseq')) > int_threshold:
+		if match_forward and len(match_forward.group('adapterseq')) > self.__class__.INT_THRESHOLD:
 			return match_forward.group('postseq')
-		elif match_forward and len(match_forward.group('preseq')) == 0 and len(match_forward.group('adapterseq')) > ext_threshold:
+		elif match_forward and len(match_forward.group('preseq')) == 0 and len(match_forward.group('adapterseq')) > self.__class__.EXT_THRESHOLD:
 			return match_forward.group('postseq')
 		else:
 			return None
 
-	def match_rc(self, sequence, ext_threshold=EXT_THRESHOLD, int_threshold=INT_THRESHOLD):
+	def match_rc(self, sequence):
 		match_rc = self.rc_seeker.search(sequence)
-		if match_rc and len(match_rc.group('adapterseq')) > int_threshold:
+		if match_rc and len(match_rc.group('adapterseq')) > self.__class__.INT_THRESHOLD:
 			return match_rc.group('preseq')
-		elif match_rc and len(match_rc.group('postseq')) == 0 and len(match_rc.group('adapterseq')) > ext_threshold:
+		elif match_rc and len(match_rc.group('postseq')) == 0 and len(match_rc.group('adapterseq')) > self.__class__.EXT_THRESHOLD:
 			return match_rc.group('preseq')
 		else:
 			return None
 
-	def match(self, sequence, ext_threshold=EXT_THRESHOLD, int_threshold=INT_THRESHOLD):
-		self.match_forward(sequence, ext_threshold, int_threshold)
-		return self.match_forward(sequence, ext_threshold, int_threshold) or self.match_rc(sequence, ext_threshold, int_threshold)
+	def match(self, sequence):
+		return self.match_forward(sequence) or self.match_rc(sequence)
 
 # helper functions
-def make_search_pattern(adapter, threshold = Matcher.EXT_THRESHOLD):
+def make_search_pattern(adapter):
 	windows = []
 	window_size = len(adapter)
 	i = 0
 	j = (i + window_size-1)
 
-	while window_size >= threshold:
+	while window_size >= Matcher.EXT_THRESHOLD:
 		i = 0
 		j = j = (i + window_size)
 		while j <= len(adapter):
