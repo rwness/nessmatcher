@@ -6,29 +6,20 @@ class Matcher:
 
 	def __init__(self, adapter):
 		self.rc = reverse_complement(adapter)
-		self.forward_seeker = re.compile('(?P<preseq>.*?)' + make_search_pattern(adapter) + '(?P<postseq>.*)')
-		self.rc_seeker = re.compile ('(?P<preseq>.*?)' + make_search_pattern(self.rc) + '(?P<postseq>.*?)')
+		self.pattern = re.compile('(?P<auxseq>.*?)' + make_search_pattern(adapter) + '(?P<targetseq>.*)')
+		self.rc_pattern = re.compile ('(?P<targetseq>.*?)' + make_search_pattern(self.rc) + '(?P<auxseq>.*?)')
 
-	def match_forward(self, sequence):
-		match_forward = self.forward_seeker.search(sequence)
-		if match_forward and len(match_forward.group('adapterseq')) > self.__class__.INT_THRESHOLD:
-			return match_forward.group('postseq')
-		elif match_forward and len(match_forward.group('preseq')) == 0 and len(match_forward.group('adapterseq')) > self.__class__.EXT_THRESHOLD:
-			return match_forward.group('postseq')
-		else:
-			return None
-
-	def match_rc(self, sequence):
-		match_rc = self.rc_seeker.search(sequence)
-		if match_rc and len(match_rc.group('adapterseq')) > self.__class__.INT_THRESHOLD:
-			return match_rc.group('preseq')
-		elif match_rc and len(match_rc.group('postseq')) == 0 and len(match_rc.group('adapterseq')) > self.__class__.EXT_THRESHOLD:
-			return match_rc.group('preseq')
+	def match_pattern(self, sequence, pattern):
+		match = pattern.search(sequence)
+		if match and len(match.group('adapterseq')) > self.__class__.INT_THRESHOLD:
+			return match.group('targetseq')
+		elif match and len(match.group('auxseq')) == 0 and len(match.group('adapterseq')) > self.__class__.EXT_THRESHOLD:
+			return match.group('targetseq')
 		else:
 			return None
 
 	def match(self, sequence):
-		return self.match_forward(sequence) or self.match_rc(sequence)
+		return self.match_pattern(sequence, self.pattern) or self.match_pattern(sequence, self.rc_pattern)
 
 # helper functions
 def make_search_pattern(adapter):
