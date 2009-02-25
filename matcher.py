@@ -5,9 +5,8 @@ class Matcher:
 	INT_THRESHOLD = 15
 
 	def __init__(self, adapter):
-		self.adapter = adapter
-		self.rc = reverse_complement(self.adapter)
-		self.forward_seeker = re.compile('(?P<preseq>.*?)' + make_search_pattern(self.adapter) + '(?P<postseq>.*)')
+		self.rc = reverse_complement(adapter)
+		self.forward_seeker = re.compile('(?P<preseq>.*?)' + make_search_pattern(adapter) + '(?P<postseq>.*)')
 		self.rc_seeker = re.compile ('(?P<preseq>.*?)' + make_search_pattern(self.rc) + '(?P<postseq>.*?)')
 
 	def match_forward(self, sequence):
