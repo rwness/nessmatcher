@@ -1,55 +1,32 @@
-import matcher
-from matcher import Matcher
+import matcher_ness
+from matcher_ness import MatcherNess
 import unittest
 
 class TestMatcher(unittest.TestCase):
     def setUp(self):
-        self.m = Matcher("ADAPTOR")
+        self.m = MatcherNess('AAGCAGTGGTATCAACGCAGAGTACGCGGG')
 
-    def testMatchesLeadingAdaptor(self):
-        self.assert_(self.m.match("ADAPTORsequence"))
+    def test1(self):
+        self.assertEquals('CAACT',(self.m.match('CAACTCCCGCGTACTCTGCGTTGATACCACTGCTTACTCT')))
 
-    def testDoesNotMatchMissingAdaptor(self):
-        self.assert_(not self.m.match("sequence"))
+    def test2(self):
+        self.assertEquals('GTTGATACCGCTGCT',(self.m.match('GTTGATACCGCTGCTTACTCTGCGTTGATACCACTGCTTA')))
 
-    def testDoesNotMatchEmbeddedAdaptor(self):
-        self.assert_(not self.m.match("sequenceADAPTORsequence"))
+    def test3(self):
+        self.assertEquals('GACGACTGATCGATC',(self.m.match('GACGACTGATCGATCTACTCTGCGTTGATACCACG')))
 
-    def testMatchesAtLeastLastBaseOfAdaptor(self):
-        self.assert_(self.m.match("Rsequence"))
+    def test4(self):
+        self.assertEquals('GCTACTGATCATATCGTTAGCTAGCTAGCTACGT',(self.m.match('GCTACTGATCATATCGTTAGCTAGCTAGCTACGTCGTACT')))
 
-    def testSplitOptionalRequired(self):
-        self.assertEquals(("ADAP","TOR"), matcher.splitOptionalRequired("ADAPTOR",3))
-        self.assertEquals(("ADA","PTOR"), matcher.splitOptionalRequired("ADAPTOR",-3))
+    def test5(self):
+        self.assertEquals('GAGCCAGGCT',(self.m.match('GCAGTGGTATCAACGCAGAGTACGCGGGGAGCCAGGCT')))
 
-    def testMatchesWithMinimumThresholdSet(self):
-        m_min = Matcher("ADAPTOR",4)
-        self.assert_(m_min.match("PTORsequence"))
+    def test6(self):
+        self.assertEquals('AAGCAGTGGTATCAACGCAGA',(self.m.match('CAACGCAGAGTACGCGGGAAGCAGTGGTATCAACGCAGA')))
 
-    def testDoesNotMatchAdaptorWithValidPartialBelowThreshold(self):
-        m_min = Matcher("ADAPTOR",4)
-        self.assert_(not m_min.match("TORsequence"))
 
-    def testDoesNotMatchAdaptorWithNonleadingBasesMissing(self):
-        self.assert_(not self.m.match("AATRsequence"))
-
-    def testMatchesPartialAdapter(self):
-        self.assert_(self.m.match("DAPTORsequence"))
-
-    def testMatchesAdaptorSuffix(self):
-        self.assert_(self.m.match("sequenceADAPTOR"))
-
-    def testMatchesPartialAdaptorSuffix(self):
-        self.assert_(self.m.match("sequenceADAPT"))
-
-    def testMatchResultPrefixMatchOnly(self):
-        self.assertEquals("sequence",self.m.match("DAPTORsequence"))
-
-    def testMatchResultSuffixMatchOnly(self):
-        self.assertEquals("sequence",self.m.match("sequenceADAPTO"))
-
-    def testMatchResultPrefixAndSuffix(self):
-        self.assertEquals("sequence",self.m.match("DAPTORsequenceADAPTO"))
+    def test7(self):
+        self.assertEquals(None,(self.m.match('GCAGTGGTATCAACGCAGAGTAAGCCGTGGTATCAACGCA')))
 
 if __name__ == "__main__":
     unittest.main()

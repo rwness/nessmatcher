@@ -1,26 +1,58 @@
 import re
 
-class Matcher:
-    DEFAULT_MIN = 1
+class MatcherNess:
+	def __init__(self, adapter):
+		self.adapter = adapter
+		self.rc = reverse_complement(self.adapter)
+		self.forward_seeker = re.compile('(?P<preseq>.*?)' + make_search_pattern(self.adapter) + '(?P<postseq>.*)')
+		self.rc_seeker = re.compile ('(?P<preseq>.*?)' + make_search_pattern(self.rc) + '(?P<postseq>.*?)')
 
-    def __init__(self, adapter, threshold=DEFAULT_MIN):
-        (optional, required) = splitOptionalRequired(adapter, threshold)
-        self.prefix_matcher = re.compile('^' + alternates(optional, lambda o,n: o[-n:]) + required + '(?P<seq>.*)' + '$')
+	def match_forward(self, sequence, ext_threshold = 5, int_threshold = 10):
+		match_forward = self.forward_seeker.search(sequence)
+		if match_forward and len(match_forward.group('adapterseq')) > int_threshold:
+			return match_forward.group('postseq')
+		elif match_forward and len(match_forward.group('preseq')) == 0 and len(match_forward.group('adapterseq')) > ext_threshold:
+			return match_forward.group('postseq')
+		else:
+			return None
 
-        (required, optional) = splitOptionalRequired(adapter, -threshold)
-        self.suffix_matcher = re.compile('^' + '(?P<seq>.*)' + required + alternates(optional, lambda o,n: o[0:n]) + '$')
+	def match_rc(self, sequence, ext_threshold = 5, int_threshold = 10):
+		match_rc = self.rc_seeker.search(sequence)
+		if match_rc and len(match_rc.group('adapterseq')) > int_threshold:
+			return match_rc.group('preseq')
+		elif match_rc and len(match_rc.group('postseq')) == 0 and len(match_rc.group('adapterseq')) > ext_threshold:
+			return match_rc.group('preseq')
+		else:
+			return None
 
-    def match(self, sequence):
-        pm = self.prefix_matcher.search(sequence)
-        sm = self.suffix_matcher.search((pm and pm.group('seq')) or sequence)
-        return (sm and sm.group('seq')) or (pm and pm.group('seq'))
+	def match(self, sequence, ext_threshold = 5, int_threshold = 10):
+		self.match_forward(sequence, ext_threshold, int_threshold)
+		return self.match_forward(sequence, ext_threshold, int_threshold) or self.match_rc(sequence, ext_threshold, int_threshold)
 
-# helper functions, not to be imported when using Matcher class
-def splitOptionalRequired(adapter, index):
-    return adapter[0:-index], adapter[-index:]
+# helper functions
 
-def alternates(optional, range_lambda):
-    alternates = []
-    for n in range(1, 1 + len(optional)):
-        alternates.append(range_lambda(optional,n))
-    return '(' + "|".join(alternates) + ')' + '?'
+def make_search_pattern(adapter):
+	alternates = []
+	threshold = 5
+	alternates.append(adapter)
+	i = len(adapter) -1
+	while i >= threshold:
+		alternates.append(adapter[:i])
+		alternates.append(adapter[-i:])
+		i -= 1
+	return "(?P<adapterseq>" + "|".join(alternates) + ")"
+
+# this function takes the adapter and generates the reverse complement
+def reverse_complement(adapter):
+	reverse = adapter[::-1]
+	rc = ''
+	for ch in reverse:
+		if ch == 'A':
+			rc = rc + 'T'
+		elif ch == 'C':
+			rc = rc + 'G'
+		elif ch == 'G':
+			rc = rc + 'C'
+		elif ch == 'T':
+			rc = rc + 'A'
+	return rc
