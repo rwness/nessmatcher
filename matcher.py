@@ -47,17 +47,6 @@ def make_search_pattern(adapter):
 		window_size -= 1
 	return "(?P<adapterseq>" + "|".join(windows) + ")"
 
-# this function takes the adapter and generates the reverse complement
 def reverse_complement(adapter):
-	reverse = adapter[::-1]
-	rc = ''
-	for ch in reverse:
-		if ch == 'A':
-			rc = rc + 'T'
-		elif ch == 'C':
-			rc = rc + 'G'
-		elif ch == 'G':
-			rc = rc + 'C'
-		elif ch == 'T':
-			rc = rc + 'A'
-	return rc
+	compliments = {'A':'T', 'C':'G', 'G':'C', 'T':'A'}
+	return ''.join([compliments[base] for base in adapter][::-1])
