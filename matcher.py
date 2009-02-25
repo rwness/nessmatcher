@@ -20,7 +20,10 @@ class Matcher:
 
 # helper functions
 def make_pattern(adapter):
-	segments = [adapter[j:i + j] for i in range(5,len(adapter) + 1)[::-1] for j in range(0,len(adapter)) if i + j <= len(adapter)]
+	segments = [adapter[j:i + j]
+		    for i in range(5,len(adapter) + 1)[::-1]
+		    for j in range(0,len(adapter))
+		    if i + j <= len(adapter)]
 	return "(?P<adapterseq>" + "|".join(segments) + ")"
 
 def reverse_complement(adapter):
