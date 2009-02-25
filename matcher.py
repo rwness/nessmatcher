@@ -15,8 +15,6 @@ class Matcher:
 			return match.group('targetseq')
 		elif match and len(match.group('auxseq')) == 0 and len(match.group('adapterseq')) > self.__class__.EXT_THRESHOLD:
 			return match.group('targetseq')
-		else:
-			return None
 
 	def match(self, sequence):
 		return self.match_pattern(sequence, self.pattern) or self.match_pattern(sequence, self.rc_pattern)
