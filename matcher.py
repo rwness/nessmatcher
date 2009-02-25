@@ -5,9 +5,8 @@ class Matcher:
 	INT_THRESHOLD = 15
 
 	def __init__(self, adapter):
-		self.rc = reverse_complement(adapter)
 		self.pattern = re.compile('(?P<auxseq>.*?)' + make_pattern(adapter) + '(?P<targetseq>.*)')
-		self.rc_pattern = re.compile ('(?P<targetseq>.*?)' + make_pattern(self.rc) + '(?P<auxseq>.*?)')
+		self.rc_pattern = re.compile ('(?P<targetseq>.*?)' + make_pattern(reverse_complement(adapter)) + '(?P<auxseq>.*?)')
 
 	def match_pattern(self, sequence, pattern):
 		match = pattern.search(sequence)
